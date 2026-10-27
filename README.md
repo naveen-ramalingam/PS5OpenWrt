@@ -116,9 +116,118 @@ For scripted deployments:
 sh /tmp/setup-ps5-openwrt.sh \
   --mode a \
   --ip 192.168.1.100 \
-  --eth-mac c0:15:1b:xx:xx:xx \
-  --wifi-mac 90:47:48:xx:xx:xx \
+  --eth-mac c0:15:1b:00:11:22 \
+  --wifi-mac 90:47:48:33:44:55 \
   --unattended
+```
+
+---
+
+## 🛠️ Direct Manual Commands: MAC-Level vs. Dedicated LAN Port
+
+> **FAQ: Does this block other LAN ports or home Wi-Fi?**  
+> **NO!** In both methods, only the PS5 (or the dedicated port) is filtered. All other router LAN ports (`lan1`, `lan2`, `lan3`) and your home Wi-Fi remain **100% unblocked** with full access to YouTube and PlayStation services for laptops, TVs, and phones.
+
+### Method 1: MAC-Level Block (Recommended)
+Blocks **only the PS5 console** based on its physical hardware MAC address. The block moves with the PS5 whether it is plugged into any switch port or connected to Wi-Fi. All other household devices on the same network remain completely unblocked.
+
+```sh
+# 1. Assign unified static IP to PS5 Ethernet and Wi-Fi MACs
+uci add dhcp host
+uci set dhcp.@host[-1].name='PS5'
+uci add_list dhcp.@host[-1].mac='c0:15:1b:00:11:22'  # Replace with PS5 Ethernet MAC
+uci add_list dhcp.@host[-1].mac='90:47:48:33:44:55'  # Replace with PS5 Wi-Fi MAC
+uci set dhcp.@host[-1].ip='192.168.1.100'
+uci commit dhcp
+/etc/init.d/dnsmasq reload
+
+# 2. Redirect port 53 DNS to AdGuard Home ONLY for PS5 MACs
+uci add firewall redirect
+uci set firewall.@redirect[-1].name='Redirect-PS5-DNS-to-AdGuard'
+uci set firewall.@redirect[-1].src='lan'
+uci set firewall.@redirect[-1].proto='tcp udp'
+uci set firewall.@redirect[-1].src_dport='53'
+uci set firewall.@redirect[-1].dest_ip='192.168.1.1'
+uci set firewall.@redirect[-1].dest_port='53'
+uci set firewall.@redirect[-1].target='DNAT'
+uci set firewall.@redirect[-1].family='ipv4'
+uci add_list firewall.@redirect[-1].src_mac='c0:15:1b:00:11:22'
+uci add_list firewall.@redirect[-1].src_mac='90:47:48:33:44:55'
+
+# 3. Reject outbound DNS-over-TLS (port 853) ONLY for PS5 MACs
+uci add firewall rule
+uci set firewall.@rule[-1].name='Block-PS5-DoT'
+uci set firewall.@rule[-1].src='lan'
+uci set firewall.@rule[-1].dest='wan'
+uci set firewall.@rule[-1].proto='tcp udp'
+uci set firewall.@rule[-1].dest_port='853'
+uci set firewall.@rule[-1].target='REJECT'
+uci add_list firewall.@rule[-1].src_mac='c0:15:1b:00:11:22'
+uci add_list firewall.@rule[-1].src_mac='90:47:48:33:44:55'
+
+# 4. Reject IPv6 ONLY for PS5 MACs (prevents SLAAC privacy address bypass)
+uci set firewall.ps5_ipv6_in=rule
+uci set firewall.ps5_ipv6_in.name='Block-PS5-IPv6-Input'
+uci set firewall.ps5_ipv6_in.src='lan'
+uci set firewall.ps5_ipv6_in.family='ipv6'
+uci set firewall.ps5_ipv6_in.proto='tcp udp'
+uci add_list firewall.ps5_ipv6_in.src_mac='c0:15:1b:00:11:22'
+uci add_list firewall.ps5_ipv6_in.src_mac='90:47:48:33:44:55'
+uci set firewall.ps5_ipv6_in.target='REJECT'
+
+uci set firewall.ps5_ipv6_fwd=rule
+uci set firewall.ps5_ipv6_fwd.name='Block-PS5-IPv6-Forward'
+uci set firewall.ps5_ipv6_fwd.src='lan'
+uci set firewall.ps5_ipv6_fwd.dest='*'
+uci set firewall.ps5_ipv6_fwd.family='ipv6'
+uci set firewall.ps5_ipv6_fwd.proto='all'
+uci add_list firewall.ps5_ipv6_fwd.src_mac='c0:15:1b:00:11:22'
+uci add_list firewall.ps5_ipv6_fwd.src_mac='90:47:48:33:44:55'
+uci set firewall.ps5_ipv6_fwd.target='REJECT'
+
+uci commit firewall
+/etc/init.d/firewall reload
+```
+
+---
+
+### Method 2: Dedicated Physical LAN Port Block (e.g. `lan4` Only)
+Physically detaches one switch port (e.g. `lan4`) from `br-lan` and assigns it a dedicated IPv4-only subnet (`192.168.4.1/24`).
+* **What is blocked:** Only devices plugged into `lan4`.
+* **Other LAN ports & Wi-Fi:** Ports `lan1`, `lan2`, `lan3`, and your Wi-Fi remain on the primary dual-stack network (`192.168.1.1/24`) with **100% normal, unblocked access**.
+
+```sh
+# 1. Remove physical port 'lan4' from main bridge br-lan
+uci del_list network.@device[0].ports='lan4'
+
+# 2. Create dedicated isolated interface for lan4 (192.168.4.1/24, IPv4-only)
+uci set network.ps5lan=interface
+uci set network.ps5lan.device='lan4'
+uci set network.ps5lan.proto='static'
+uci set network.ps5lan.ipaddr='192.168.4.1'
+uci set network.ps5lan.netmask='255.255.255.0'
+uci set network.ps5lan.ipv6='0'
+
+# 3. Create dedicated IPv4-only DHCP pool for lan4 (no IPv6 Router Advertisements)
+uci set dhcp.ps5lan=dhcp
+uci set dhcp.ps5lan.interface='ps5lan'
+uci set dhcp.ps5lan.start='100'
+uci set dhcp.ps5lan.limit='50'
+uci set dhcp.ps5lan.leasetime='12h'
+uci set dhcp.ps5lan.dhcpv4='server'
+uci set dhcp.ps5lan.dhcpv6='disabled'
+uci set dhcp.ps5lan.ra='disabled'
+uci set dhcp.ps5lan.ndp='disabled'
+
+# 4. Attach to LAN firewall zone (allows your PC on 192.168.1.x to send payloads to PS5)
+uci add_list firewall.@zone[0].network='ps5lan'
+
+# Commit and reload services
+uci commit network
+uci commit dhcp
+uci commit firewall
+/etc/init.d/network reload
+/etc/init.d/firewall reload
 ```
 
 ---
