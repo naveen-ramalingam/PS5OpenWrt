@@ -71,13 +71,20 @@ relapse FAILED kaslr: no interface has an address
 
 ## 🚀 Quick Start
 
-### Option 1: AI Coding Agent (Automated)
+### Option 1: AI Coding Agent (Automated Setup & Verification)
 If you are using an AI Coding Assistant (Antigravity, Claude, ChatGPT, Cursor, Aider):
-Simply point your AI agent to [AGENT.md](AGENT.md):
+Simply give your agent the repository URL and say:
+
+**To Setup:**
 ```text
-"Please configure my OpenWrt router for my PS5 using the instructions in AGENT.md."
+"Please connect to my OpenWrt router and configure it for my PS5 using the instructions in https://github.com/naveen-ramalingam/PS5OpenWrt/blob/main/AGENT.md"
 ```
-The agent will inspect your router, suggest the optimal mode, ask for your PS5 MAC address, and apply the configuration idempotently.
+
+**To Verify:**
+```text
+"Please run the verification checks from https://github.com/naveen-ramalingam/PS5OpenWrt to confirm my PS5 static lease, firewall rules, and YouTube/nanoDNS blocking are working."
+```
+The agent will inspect your router, create a safety backup, prompt you for your setup preferences, apply the configuration, and run the verification diagnostics automatically!
 
 ---
 
