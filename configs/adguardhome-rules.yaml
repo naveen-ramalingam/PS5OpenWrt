@@ -1,0 +1,41 @@
+# ==============================================================================
+# AdGuard Home Configuration Snippet for PS5 Isolation
+# File location on OpenWrt: /etc/adguardhome/adguardhome.yaml
+# ==============================================================================
+
+# 1. Define persistent client (under clients -> persistent:)
+clients:
+  persistent:
+    - name: PS5
+      ids:
+        - 192.168.1.100
+        - <PS5_WIRED_MAC>
+        - <PS5_WIFI_MAC>
+      tags: []
+      blocked_services:
+        - youtube
+      upstreams: []
+
+# 2. Add custom user rules (under user_rules:)
+user_rules:
+  # PS5 YouTube Block
+  - '||youtube.*^$client=192.168.1.100'
+  - '||googlevideo.com^$client=192.168.1.100'
+  - '||youtu.be^$client=192.168.1.100'
+  - '||ytimg.com^$client=192.168.1.100'
+
+  # nanoDNS PS5 Exceptions (Whitelisted for User Guide / STUN)
+  - '@@||feature.api.playstation.com^$client=192.168.1.100'
+  - '@@||stun.playstation.net^$client=192.168.1.100'
+  - '@@||*.stun.playstation.net^$client=192.168.1.100'
+  - '@@||stun.*.playstation.net^$client=192.168.1.100'
+  - '@@||ena.net.playstation.net^$client=192.168.1.100'
+  - '@@||post.net.playstation.net^$client=192.168.1.100'
+  - '@@||gst.prod.dl.playstation.net^$client=192.168.1.100'
+
+  # nanoDNS PS5 Overrides (Blocked PlayStation / PSN / Updates)
+  - '||playstation.com^$client=192.168.1.100'
+  - '||playstation.net^$client=192.168.1.100'
+  - '||psndl.net^$client=192.168.1.100'
+  - '||playstation.com.*^$client=192.168.1.100'
+  - '||playstation.net.*^$client=192.168.1.100'

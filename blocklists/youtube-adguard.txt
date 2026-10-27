@@ -1,0 +1,6 @@
+# AdGuard Home Client-Scoped User Rules for YouTube Blocking
+# Replace 192.168.1.100 with your PS5 static IP, or 'PS5' if using client name
+||youtube.*^$client=192.168.1.100
+||googlevideo.com^$client=192.168.1.100
+||youtu.be^$client=192.168.1.100
+||ytimg.com^$client=192.168.1.100

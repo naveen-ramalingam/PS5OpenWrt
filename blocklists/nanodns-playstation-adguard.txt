@@ -1,0 +1,19 @@
+# nanoDNS Rules for PlayStation 5 (AdGuard Home Format)
+# Blocks system updates, telemetry, and PSN checks while keeping User's Guide (exploits) & STUN active.
+# Replace 192.168.1.100 with your PS5 static IP, or 'PS5' if using client name
+
+# === Whitelist Exceptions (REQUIRED for User's Guide & Offline Payload Delivery) ===
+@@||feature.api.playstation.com^$client=192.168.1.100
+@@||stun.playstation.net^$client=192.168.1.100
+@@||*.stun.playstation.net^$client=192.168.1.100
+@@||stun.*.playstation.net^$client=192.168.1.100
+@@||ena.net.playstation.net^$client=192.168.1.100
+@@||post.net.playstation.net^$client=192.168.1.100
+@@||gst.prod.dl.playstation.net^$client=192.168.1.100
+
+# === Blacklist Overrides (Blocks Updates, Telemetry, and PSN Auth) ===
+||playstation.com^$client=192.168.1.100
+||playstation.net^$client=192.168.1.100
+||psndl.net^$client=192.168.1.100
+||playstation.com.*^$client=192.168.1.100
+||playstation.net.*^$client=192.168.1.100
