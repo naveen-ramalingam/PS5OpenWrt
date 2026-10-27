@@ -235,26 +235,31 @@ uci set firewall.@rule[-1].target='REJECT'
 [ -n "$WIFI_MAC" ] && uci add_list firewall.@rule[-1].src_mac="$WIFI_MAC"
 
 if [ "$MODE" = "a" ]; then
-  # Rule C: Reject IPv6 Input from PS5 MACs
-  uci set firewall.ps5_ipv6_in=rule
-  uci set firewall.ps5_ipv6_in.name='Block-PS5-IPv6-Input'
-  uci set firewall.ps5_ipv6_in.src='lan'
-  uci set firewall.ps5_ipv6_in.family='ipv6'
-  uci set firewall.ps5_ipv6_in.proto='tcp udp'
-  [ -n "$ETH_MAC" ] && uci add_list firewall.ps5_ipv6_in.src_mac="$ETH_MAC"
-  [ -n "$WIFI_MAC" ] && uci add_list firewall.ps5_ipv6_in.src_mac="$WIFI_MAC"
-  uci set firewall.ps5_ipv6_in.target='REJECT'
+  if [ -d /proc/sys/net/ipv6 ]; then
+    echo "    [*] IPv6 stack detected: Adding MAC-based L3 rejection rules to prevent DNS leaks..."
+    # Rule C: Reject IPv6 Input from PS5 MACs
+    uci set firewall.ps5_ipv6_in=rule
+    uci set firewall.ps5_ipv6_in.name='Block-PS5-IPv6-Input'
+    uci set firewall.ps5_ipv6_in.src='lan'
+    uci set firewall.ps5_ipv6_in.family='ipv6'
+    uci set firewall.ps5_ipv6_in.proto='tcp udp'
+    [ -n "$ETH_MAC" ] && uci add_list firewall.ps5_ipv6_in.src_mac="$ETH_MAC"
+    [ -n "$WIFI_MAC" ] && uci add_list firewall.ps5_ipv6_in.src_mac="$WIFI_MAC"
+    uci set firewall.ps5_ipv6_in.target='REJECT'
 
-  # Rule D: Reject IPv6 Forward from PS5 MACs
-  uci set firewall.ps5_ipv6_fwd=rule
-  uci set firewall.ps5_ipv6_fwd.name='Block-PS5-IPv6-Forward'
-  uci set firewall.ps5_ipv6_fwd.src='lan'
-  uci set firewall.ps5_ipv6_fwd.dest='*'
-  uci set firewall.ps5_ipv6_fwd.family='ipv6'
-  uci set firewall.ps5_ipv6_fwd.proto='all'
-  [ -n "$ETH_MAC" ] && uci add_list firewall.ps5_ipv6_fwd.src_mac="$ETH_MAC"
-  [ -n "$WIFI_MAC" ] && uci add_list firewall.ps5_ipv6_fwd.src_mac="$WIFI_MAC"
-  uci set firewall.ps5_ipv6_fwd.target='REJECT'
+    # Rule D: Reject IPv6 Forward from PS5 MACs
+    uci set firewall.ps5_ipv6_fwd=rule
+    uci set firewall.ps5_ipv6_fwd.name='Block-PS5-IPv6-Forward'
+    uci set firewall.ps5_ipv6_fwd.src='lan'
+    uci set firewall.ps5_ipv6_fwd.dest='*'
+    uci set firewall.ps5_ipv6_fwd.family='ipv6'
+    uci set firewall.ps5_ipv6_fwd.proto='all'
+    [ -n "$ETH_MAC" ] && uci add_list firewall.ps5_ipv6_fwd.src_mac="$ETH_MAC"
+    [ -n "$WIFI_MAC" ] && uci add_list firewall.ps5_ipv6_fwd.src_mac="$WIFI_MAC"
+    uci set firewall.ps5_ipv6_fwd.target='REJECT'
+  else
+    echo "    [✓] IPv6 is disabled in the kernel; PS5 is natively IPv4-only."
+  fi
 fi
 
 if [ "$MODE" = "b" ]; then
