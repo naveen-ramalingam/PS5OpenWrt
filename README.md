@@ -7,11 +7,33 @@
 
 A battle-tested, automated OpenWrt configuration framework designed for **PlayStation 5 jailbroken and exploit consoles** (firmwares 3.xx, 4.xx, 5.xx, 7.xx, etc.).
 
-This repository provides automated scripts, UCI configuration templates, DNS blocklists, and an **AI Agent execution protocol** to:
-1. **Prevent Accidental System Software Updates:** Integrated [nanoDNS](https://github.com/drakmor/nanoDNS) rule set that blocks all PlayStation update/telemetry/PSN servers while strictly whitelisting the User's Guide exploit entrypoint (`feature.api.playstation.com`) and STUN servers.
-2. **Block YouTube Exclusively on PS5:** Restricts YouTube access solely for the PS5, leaving all other home devices (Smart TVs, laptops, phones) completely unblocked.
-3. **Prevent Exploit Failures (`relapse FAILED kaslr: no interface has an address`):** Implements an exploit-safe layer-3 firewall architecture that avoids low-level DSA switch port lockups.
-4. **Prevent IPv6 DNS/Internet Leaks:** Blocks SLAAC temporary IPv6 privacy addresses from bypassing IPv4 client-scoped filtering.
+> [!WARNING]
+> ### ⚠️ Always Back Up Your OpenWrt Configuration First!
+> Before applying any firewall or network changes, create a complete backup archive of your router:
+> - **Via LuCI Web UI:** Go to **System** $\rightarrow$ **Backup / Flash Firmware** $\rightarrow$ Click **Generate archive**.
+> - **Via SSH:** Run `sysupgrade -b /tmp/openwrt-pre-ps5-backup.tar.gz` and download it with `scp root@<ROUTER_IP>:/tmp/openwrt-pre-ps5-backup.tar.gz .`
+> *(Note: The included setup script and AI agent protocol automatically create a pre-configuration backup before touching any settings!)*
+
+---
+
+## 📋 Prerequisites
+
+Before setting up `PS5OpenWrt`, ensure you have:
+1. **OpenWrt Router:** Running OpenWrt 21.02, 22.03, 23.05, 24.xx, or 25.xx (OpenWrt with modern `fw4` / nftables is strongly recommended).
+2. **AdGuard Home (Recommended):** Installed on your router (listening on port 53 or integrated with dnsmasq). AdGuard Home is required for client-specific (`$client=...`) filtering so YouTube and PlayStation updates are blocked *only* on the PS5 while other household devices remain unblocked. (If using native dnsmasq, domain rules apply globally).
+3. **Root Access:** SSH access (`root@<ROUTER_IP>`) to your OpenWrt router.
+4. **Console Connection:** PS5 connected to the router via Ethernet cable (recommended) or Wi-Fi.
+
+---
+
+## 💡 Key Benefits: No Manual DNS & No Payload Autostart Needed
+
+* **No Manual DNS Setup on the PS5:**
+  You can leave your PS5 Network Settings on **Automatic** (DHCP)! The router's firewall rules automatically intercept any rogue UDP/TCP port 53 DNS queries and force them into AdGuard Home. If someone on your network tries to set DNS to `8.8.8.8` or `1.1.1.1` on the console, it is still transparently intercepted. Outbound DNS-over-TLS (port 853) is also rejected.
+* **No nanoDNS Payload or Autostart Needed:**
+  Because the router intercepts and blocks updates/telemetry network-wide at the gateway, **you never need to load or autostart the nanoDNS payload on the PS5**. 
+* **User's Guide Always Ready:**
+  The User's Guide exploit entrypoint (`feature.api.playstation.com`) and STUN servers are permanently whitelisted, allowing you to launch exploits anytime from **Settings $\rightarrow$ User's Guide**.
 
 ---
 

@@ -13,7 +13,33 @@ Your goal is to safely configure an OpenWrt router to:
 
 ---
 
-## 2. Interactive Discovery Workflow (Phase 1)
+## 2. Prerequisites Checklist
+
+Before proceeding with any router configuration, verify that the following are present:
+1. **OpenWrt Router:** Running OpenWrt 21.02, 22.03, 23.05, 24.xx, or 25.xx (OpenWrt with `fw4` / nftables is strongly recommended).
+2. **AdGuard Home (Recommended):** Running on the router (e.g. listening on port 53 or integrated with dnsmasq). AdGuard Home is required for client-specific (`$client=...`) filtering so only the PS5 is blocked while household devices are untouched. (If using native dnsmasq, domain blocks apply router-wide).
+3. **Root Access:** SSH access (`root@<ROUTER_IP>`) with password or public key authentication.
+4. **PS5 Hardware Connection:** Connected to the router via Ethernet cable (recommended) or Wi-Fi.
+
+---
+
+## 3. Mandatory Safety Rule: Create Router Backup First!
+
+> [!CAUTION]
+> **AI AGENT MANDATE:** You MUST take a full configuration backup of the user's OpenWrt router BEFORE executing any configuration commands or running scripts.
+
+Execute via SSH:
+```sh
+BACKUP="/tmp/openwrt-pre-ps5-backup-$(date +%s).tar.gz"
+sysupgrade -b "$BACKUP"
+echo "Backup created at: $BACKUP"
+```
+Inform the user of the saved backup path and provide them the `scp` command to download it to their local machine:
+`scp root@<ROUTER_IP>:/tmp/openwrt-pre-ps5-backup-*.tar.gz .`
+
+---
+
+## 4. Interactive Discovery Workflow (Phase 1)
 
 When the user asks you to configure their router for PS5, **do not immediately run destructive commands**. Follow this phased interview:
 
@@ -39,7 +65,7 @@ Ask the user two simple questions:
 
 ---
 
-## 3. Critical Technical Pitfalls (Must Read!)
+## 5. Critical Technical Pitfalls (Must Read!)
 
 ### ⚠️ Never attach `table netdev` hooks to DSA switch ports!
 - **The Bug:** Attaching an `nftables` `netdev` ingress/egress hook (e.g. `hook ingress device "lan4"`) directly to MediaTek MT7530/MT7531 or Broadcom DSA switch slave ports on Linux 6.x causes the switch port's RX queue to permanently freeze when the PS5 reboots and cycles physical link state (`rx_packets` freezes).
@@ -56,18 +82,18 @@ Ask the user two simple questions:
 
 ---
 
-## 4. Automated Execution (Phase 2)
+## 6. Automated Execution (Phase 2)
 
 You can execute the included script directly on the router:
 ```sh
 # Copy script to router /tmp
 scp scripts/setup-ps5-openwrt.sh root@<ROUTER_IP>:/tmp/
 
-# Run unattended
+# Run unattended (automatically takes a pre-change backup!)
 ssh root@<ROUTER_IP> 'sh /tmp/setup-ps5-openwrt.sh --mode a \
   --ip 192.168.1.100 \
-  --eth-mac c0:15:1b:xx:xx:xx \
-  --wifi-mac 90:47:48:xx:xx:xx \
+  --eth-mac c0:15:1b:00:11:22 \
+  --wifi-mac 90:47:48:33:44:55 \
   --unattended'
 ```
 
@@ -80,7 +106,7 @@ Or apply the equivalent UCI commands idempotently:
 
 ---
 
-## 5. Verification Protocol (Phase 3)
+## 7. Verification Protocol (Phase 3)
 
 After configuration, verify:
 1. **Connectivity:** `ping -c 2 192.168.1.100` (must be `< 1 ms`).
@@ -96,3 +122,16 @@ After configuration, verify:
    # Must return reason: FilteredBlackList
    ```
 3. **Exploit Launch:** Instruct the user to open User's Guide or WebKit Autoloader on the PS5. The exploit will obtain KASLR and execute without interface errors.
+
+---
+
+## 8. Final Advice to Give the User
+
+Inform the user:
+1. **No Manual DNS Configuration Needed on the PS5:**
+   - Network settings on the PS5 should be left on **Automatic** (DHCP).
+   - The router automatically captures all DNS requests and forces them into AdGuard Home.
+2. **No nanoDNS Payload or Autostart Needed:**
+   - Because the router enforces nanoDNS rules 24/7 at the gateway level, they **do not need to load or autostart the nanoDNS payload** on the console.
+3. **User's Guide Ready:**
+   - Exploit hosting entrypoints (`feature.api.playstation.com`) are permanently whitelisted, allowing instant access via Settings -> User's Guide.

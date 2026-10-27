@@ -166,6 +166,20 @@ echo "    - Router LAN IP: $ROUTER_LAN_IP"
 echo ""
 
 # ------------------------------------------------------------------------------
+# 0. Safety First: Automatic Router Configuration Backup
+# ------------------------------------------------------------------------------
+BACKUP_ARCHIVE="/tmp/openwrt-pre-ps5-backup-$(date +%s).tar.gz"
+echo "[*] Step 0: Creating safety router configuration backup..."
+if command -v sysupgrade >/dev/null 2>&1; then
+  sysupgrade -b "$BACKUP_ARCHIVE" >/dev/null 2>&1 || true
+  echo "    [✓] Router backup archive created: $BACKUP_ARCHIVE"
+  echo "        (Download to your PC via: scp root@$ROUTER_LAN_IP:$BACKUP_ARCHIVE .)"
+else
+  echo "    [!] Notice: 'sysupgrade' utility not found; skipping tar.gz generation."
+fi
+echo ""
+
+# ------------------------------------------------------------------------------
 # 1. DHCP Static Host Reservation
 # ------------------------------------------------------------------------------
 echo "[*] Step 1: Configuring unified DHCP static lease..."
@@ -343,5 +357,14 @@ echo "    - Static IP: $PS5_IP"
 echo "    - Exploit Compatibility: Verified for Y2JB & WebKit Autoloader"
 echo "    - YouTube Block: $BLOCK_YOUTUBE"
 echo "    - PlayStation nanoDNS Block: $BLOCK_NANODNS"
+echo ""
+echo "[*] IMPORTANT PS5 SETUP NOTES:"
+echo "    1. NO MANUAL DNS NEEDED ON PS5: Keep PS5 Network DNS set to"
+echo "       'Automatic' (DHCP). The router intercepts all DNS queries."
+echo "    2. NO NANODNS PAYLOAD NEEDED: Update/telemetry blocking is handled"
+echo "       entirely at the router level. You do not need to run or auto-load"
+echo "       the nanoDNS payload anymore."
+echo "    3. USER'S GUIDE READY: Exploit entrypoint (feature.api.playstation.com)"
+echo "       is whitelisted. Open Settings -> User's Guide to launch exploits!"
 echo "======================================================================"
 EOF
