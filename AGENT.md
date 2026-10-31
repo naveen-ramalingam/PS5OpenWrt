@@ -13,7 +13,17 @@ Your goal is to safely configure an OpenWrt router to:
 
 ---
 
-## 2. Prerequisites Checklist
+## 2. User Invocation Prompts
+
+Users typically invoke you with one of two instructions:
+- **Setup Prompt:**
+  > *"Please connect to my OpenWrt router and configure it for my PS5 using the instructions in https://github.com/naveen-ramalingam/PS5OpenWrt/blob/main/AGENT.md"*
+- **Verification Prompt:**
+  > *"Please run the verification checks from https://github.com/naveen-ramalingam/PS5OpenWrt to confirm my PS5 static lease, firewall rules, and YouTube/nanoDNS blocking are working."*
+
+---
+
+## 3. Prerequisites Checklist
 
 Before proceeding with any router configuration, verify that the following are present:
 1. **OpenWrt Router:** Running OpenWrt 21.02, 22.03, 23.05, 24.xx, or 25.xx (OpenWrt with `fw4` / nftables is strongly recommended).
@@ -23,7 +33,7 @@ Before proceeding with any router configuration, verify that the following are p
 
 ---
 
-## 3. Mandatory Safety Rule: Create Router Backup First!
+## 4. Mandatory Safety Rule: Create Router Backup First!
 
 > [!CAUTION]
 > **AI AGENT MANDATE:** You MUST take a full configuration backup of the user's OpenWrt router BEFORE executing any configuration commands or running scripts.
@@ -39,7 +49,7 @@ Inform the user of the saved backup path and provide them the `scp` command to d
 
 ---
 
-## 4. Interactive Discovery Workflow (Phase 1)
+## 5. Interactive Discovery Workflow (Phase 1)
 
 When the user asks you to configure their router for PS5, **do not immediately run destructive commands**. Follow this phased interview:
 
@@ -65,7 +75,7 @@ Ask the user two simple questions:
 
 ---
 
-## 5. Critical Technical Pitfalls (Must Read!)
+## 6. Critical Technical Pitfalls (Must Read!)
 
 ### ⚠️ Never attach `table netdev` hooks to DSA switch ports!
 - **The Bug:** Attaching an `nftables` `netdev` ingress/egress hook (e.g. `hook ingress device "lan4"`) directly to MediaTek MT7530/MT7531 or Broadcom DSA switch slave ports on Linux 6.x causes the switch port's RX queue to permanently freeze when the PS5 reboots and cycles physical link state (`rx_packets` freezes).
@@ -82,7 +92,7 @@ Ask the user two simple questions:
 
 ---
 
-## 6. Automated Execution (Phase 2)
+## 7. Automated Execution (Phase 2)
 
 You can execute the included script directly on the router:
 ```sh
@@ -106,7 +116,7 @@ Or apply the equivalent UCI commands idempotently:
 
 ---
 
-## 7. Verification Protocol (Phase 3)
+## 8. Verification Protocol (Phase 3)
 
 After configuration, verify:
 1. **Connectivity:** `ping -c 2 192.168.1.100` (must be `< 1 ms`).
@@ -125,7 +135,7 @@ After configuration, verify:
 
 ---
 
-## 8. Final Advice to Give the User
+## 9. Final Advice to Give the User
 
 Inform the user:
 1. **No Manual DNS Configuration Needed on the PS5:**

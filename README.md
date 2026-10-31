@@ -71,20 +71,16 @@ relapse FAILED kaslr: no interface has an address
 
 ## 🚀 Quick Start
 
-### Option 1: AI Coding Agent (Automated Setup & Verification)
-If you are using an AI Coding Assistant (Antigravity, Claude, ChatGPT, Cursor, Aider):
-Simply give your agent the repository URL and say:
+### 🤖 Ask Your AI Agent to Set Up & Verify!
+If you use an AI Coding Assistant (**Claude, ChatGPT, Cursor, Antigravity, Aider**), you don't even have to run commands manually. Just give your agent the repository link:
 
-**To Setup:**
-```text
-"Please connect to my OpenWrt router and configure it for my PS5 using the instructions in https://github.com/naveen-ramalingam/PS5OpenWrt/blob/main/AGENT.md"
-```
+> **To Setup:**  
+> *"Please connect to my OpenWrt router and configure it for my PS5 using the instructions in https://github.com/naveen-ramalingam/PS5OpenWrt/blob/main/AGENT.md"*
 
-**To Verify:**
-```text
-"Please run the verification checks from https://github.com/naveen-ramalingam/PS5OpenWrt to confirm my PS5 static lease, firewall rules, and YouTube/nanoDNS blocking are working."
-```
-The agent will inspect your router, create a safety backup, prompt you for your setup preferences, apply the configuration, and run the verification diagnostics automatically!
+> **To Verify:**  
+> *"Please run the verification checks from https://github.com/naveen-ramalingam/PS5OpenWrt to confirm my PS5 static lease, firewall rules, and YouTube/nanoDNS blocking are working."*
+
+The agent will automatically create a router safety backup, ask for your preferred setup (bridged LAN vs dedicated switch port), configure everything, and verify exploit readiness!
 
 ---
 
